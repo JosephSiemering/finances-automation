@@ -1,0 +1,7 @@
+#Ignore virtual environment
+venv/
+
+#Ignore sensitive data files
+bank_transactions.csv
+category_mappings.csv
+final_report.csv
