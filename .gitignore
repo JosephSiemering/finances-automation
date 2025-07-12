@@ -3,5 +3,5 @@ venv/
 
 #Ignore sensitive data files
 bank_transactions.csv
-category_mappings.csv
+category_mappings.json
 final_report.csv
