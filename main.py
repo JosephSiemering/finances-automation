@@ -1,35 +1,25 @@
-import streamlit as st  # Turn Python scripts into interactive web apps
-import pandas as pd  # Makes it easy to work with data
-import plotly.express as px  # Create good looking interactive charts quickly
+import streamlit as st  # Python framework used for creating interactive data apps
+import pandas as pd  # Python library: Makes it easy to work with tabular data
+# plotly: python graphing library    plotly.express: Create common figures more easily
+import plotly.express as px
 import json  # To load mappings from JSON file
-import os  # To handle file paths or check files
+import os  # To check if files exist
+import datetime  # for working with dates
 
-# Streamlit setup
+# Streamlit page setup
 st.set_page_config(page_title="Joey's Finances", page_icon="💰", layout="wide")
 
+# Where categories and mappings are stored
 category_file = "category_mappings.json"
 
-# Set default category to uncategorized
-if "categories" not in st.session_state:
-    st.session_state.categories = {
-        "Uncategorized": []
-    }
 
-# Then, check if category is already mapped, and update it
-if os.path.exists(category_file):
-    with open(category_file, "r") as f:
-        st.session_state.categories = json.load(f)
+# Function to assign categories to each transcation row
+def categorize_transactions(df, categories):
+    df["Category"] = "Uncategorized"  # Initialize all rows as uncategorized
 
-
-def save_categories():
-    with open(category_file, "w") as f:
-        json.dump(st.session_state.categories, f)
-
-
-def categorize_transcations(df):
-    df["Category"] = "Uncategorized"
-
-    for category, keywords in st.session_state.categories.items():  # Loop through all categories
+    # Loop through each category and its keywords. The items() method returns all key-value pairs in a dictionary
+    for category, keywords in categories.items():
+        # if category is uncategorized or keywords is empty, go to next loop iteration
         if category == "Uncategorized" or not keywords:
             continue
 
@@ -45,16 +35,16 @@ def categorize_transcations(df):
     return df
 
 
-def load_transactions(file):
+def load_transactions(file, categories):
     try:
         df = pd.read_csv(file)
 
-        # Cleam up data
+        # Clean up data
         df.columns = [col.strip() for col in df.columns]
         df["Date"] = pd.to_datetime(df["Date"], format="%m/%d/%Y")
         df["Date"] = df["Date"].dt.date
 
-        return categorize_transcations(df)
+        return categorize_transactions(df, categories)
     except Exception as e:
         st.error(f"Error processing file: {str(e)}")
         return None
@@ -63,18 +53,37 @@ def load_transactions(file):
 def main():
     st.title("Joey's Finance Dashboard")
 
-    # Dsiplay a file uploader widget
+    # Then, check if category is already mapped, and update it
+    if os.path.exists(category_file):
+        with open(category_file, "r") as f:
+            categories = json.load(f)
+    else:
+        categories = {"Uncategorized": []}
+
+    # Display a file uploader widget
     uploaded_file = st.file_uploader(
         "Upload your transaction CSV file in the format: [Date],[Description],[Amount]", type=["csv"])
 
     if uploaded_file is not None:
         # df stands for DataFrame. Primary data structure in pandas that you can filter, group, sort, summarize, etc. Like an Excel table
-        df = load_transactions(uploaded_file)
+        df = load_transactions(uploaded_file, categories)
 
         if df is not None:
+            today = datetime.date.today()
+            first_day_this_month = today.replace(day=1)
+
+            first_day_ts = pd.Timestamp(first_day_this_month)
+            start_date_ts = first_day_ts - pd.DateOffset(months=11)
+            start_date = start_date_ts.date()
+
+            end_date = today
+
+            df_last12 = df[(df["Date"] >= start_date)
+                           & (df["Date"] <= end_date)]
+
             # Table 1: Credits and Debits tabs
-            debits_df = df[df["Amount"] < 0].copy()
-            credits_df = df[df["Amount"] >= 0].copy()
+            debits_df = df_last12[df_last12["Amount"] < 0].copy()
+            credits_df = df_last12[df_last12["Amount"] >= 0].copy()
 
             tab1, tab2 = st.tabs(["Debits", "Credits"])
             with tab1:
