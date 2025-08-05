@@ -124,11 +124,11 @@ def main():
             debits_df = df_last12[df_last12["Amount"] < 0].copy()
             credits_df = df_last12[df_last12["Amount"] >= 0].copy()
 
-            tab1, tab2 = st.tabs(["Debits", "Credits"])
+            tab1, tab2 = st.tabs(["Credits", "Debits"])
             with tab1:
-                st.write(debits_df)
-            with tab2:
                 st.write(credits_df)
+            with tab2:
+                st.write(debits_df)
 
 
 main()
