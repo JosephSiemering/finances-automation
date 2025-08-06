@@ -55,6 +55,7 @@ def load_transactions(file, categories):
 
 def main():
     st.title("Joey's Finance Dashboard")
+    st.markdown("**Past 12 Months**")
 
     # Check if json file exists. If it does, open it and load into Python dictionary called 'categories'
     if os.path.exists(category_file):
@@ -90,7 +91,7 @@ def main():
                            & (df["Date"] <= end_date)]
 
             # =================================================
-            # Graph 1: Cumulative Net Balance
+            # Graph 1: Cumulative Net Change
             # =================================================
             df_sorted = df_last12.sort_values("Date")
             # pandas method - creates cumulative sum column
@@ -100,7 +101,7 @@ def main():
             cnb_fig = px.line(df_sorted,
                               x="Date",
                               y="Net Balance",
-                              title="Cumulative Net Balance Over Time")
+                              title="Cumulative Net Change")
 
             # Format x axis
             cnb_fig.update_xaxes(
@@ -115,8 +116,66 @@ def main():
             # Update y axis label
             cnb_fig.update_layout(yaxis_title="Balance ($)")
 
-            # embed plotly chart in streamlit
-            st.plotly_chart(cnb_fig)
+            # write to streamlit
+            st.write(cnb_fig)
+
+            # =================================================
+            # Table 1: Monthly Summary
+            # =================================================
+            summary_df = df_last12.copy()
+
+            # Create column with month/year objects for sorting
+            summary_df["MonthPeriod"] = pd.to_datetime(
+                summary_df["Date"]).dt.to_period("M")
+
+            # Create month column for display
+            summary_df["Month"] = summary_df["MonthPeriod"].dt.strftime(
+                "%b %Y")
+
+            # Calculate credits and debits values for each month (will be stored as a pandas series where index=MonthPeriod, value=sum of amounts)
+            credits = summary_df[summary_df["Amount"] > 0].groupby("MonthPeriod")[
+                "Amount"].sum()
+            debits = summary_df[summary_df["Amount"] < 0].groupby("MonthPeriod")[
+                "Amount"].sum().abs()
+
+            # Combine credits and debits into a dataframe, index is MonthPeriod
+            monthly_sum = pd.DataFrame({
+                "Credits": credits,
+                "Debits": debits
+            })
+
+            # Sort with most recent month at top
+            monthly_sum = monthly_sum.sort_values(
+                "MonthPeriod", ascending=False)
+
+            # Calculate Net Change
+            monthly_sum["Net Change"] = monthly_sum["Credits"] - \
+                monthly_sum["Debits"]
+
+            # Add Month column for display
+            monthly_sum["Month"] = monthly_sum.index.strftime("%b %Y")
+
+            # Move month to front
+            monthly_sum = monthly_sum[["Month",
+                                      "Credits", "Debits", "Net Change"]]
+
+            # Reset index to get rid of MonthPeriod
+            monthly_sum = monthly_sum.reset_index(drop=True)
+
+            # function to color net change red=negative green=positive
+            def color_net_change(value):
+                # Return string will become inline css for coloring
+                return f"color: {'green' if value > 0 else 'red'};"
+
+            # Display table in streamlit
+            st.subheader("Monthly Summary")
+            # Write table to streamlit
+            # applymap() - apply a function element-wise to a DataFrame (or subset of DataFrame)
+            # format() - Change all values in subset to have 2 decimal places
+            st.write(monthly_sum.style
+                     .applymap(color_net_change, subset=["Net Change"])
+                     .format("{:.2f}", subset=["Credits", "Debits", "Net Change"])
+                     )
 
             # =================================================
             # Chart 1: Spending by Category
@@ -135,10 +194,10 @@ def main():
             st.write(pie_fig)
 
             # =================================================
-            # Table 1: Credits and Debits tabs
+            # Table 2: Credits and Debits tabs
             # =================================================
-            debits_df = df_last12[df_last12["Amount"] < 0].copy()
-            credits_df = df_last12[df_last12["Amount"] >= 0].copy()
+            debits_df = df_last12[df_last12["Amount"] < 0]
+            credits_df = df_last12[df_last12["Amount"] >= 0]
 
             tab1, tab2 = st.tabs(["Credits", "Debits"])
             with tab1:
