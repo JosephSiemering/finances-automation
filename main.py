@@ -119,6 +119,22 @@ def main():
             st.plotly_chart(cnb_fig)
 
             # =================================================
+            # Chart 1: Spending by Category
+            # =================================================
+            # group dataframe by category
+            pie_df = df_last12[df_last12["Amount"] < 0]
+            pie_df = pie_df.groupby("Category")[
+                "Amount"].sum().abs().reset_index()
+
+            pie_fig = px.pie(
+                pie_df,
+                values="Amount",
+                names="Category",
+                title="Spending by Category"
+            )
+            st.write(pie_fig)
+
+            # =================================================
             # Table 1: Credits and Debits tabs
             # =================================================
             debits_df = df_last12[df_last12["Amount"] < 0].copy()
