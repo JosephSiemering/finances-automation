@@ -7,7 +7,7 @@ import os  # To check if files exist
 import datetime  # for working with dates
 
 # Streamlit page setup
-st.set_page_config(page_title="Joey's Finances", page_icon="💰", layout="wide")
+st.set_page_config(page_title="My Finances", page_icon="💰", layout="wide")
 
 # Where categories and mappings are stored
 category_file = "category_mappings.json"
@@ -54,7 +54,7 @@ def load_transactions(file, categories):
 
 
 def main():
-    st.title("Joey's Finance Dashboard")
+    st.title("My Finance Dashboard")
     st.markdown("**Past 12 Months**")
 
     # Check if json file exists. If it does, open it and load into Python dictionary called 'categories'
