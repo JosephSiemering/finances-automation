@@ -194,7 +194,29 @@ def main():
             st.write(pie_fig)
 
             # =================================================
-            # Table 2: Credits and Debits tabs
+            # Table 2: Top Vendors
+            # =================================================
+            vendor_df = df_last12.copy()
+
+            vendor_df = vendor_df[vendor_df["Amount"] < 0]
+
+            # Group by vendor and sum total spending - returns a pandas series
+            vendor_sum = vendor_df.groupby("Description")["Amount"].sum().abs()
+
+            # Convert series to DataFrame
+            vendor_df = pd.DataFrame({
+                "Amount": vendor_sum
+            })
+
+            vendor_df = vendor_df.sort_values(
+                by='Amount', ascending=False).reset_index()
+
+            st.subheader("Top Vendors")
+            st.write(vendor_df.style
+                     .format("{:.2f}", subset=["Amount"]))
+
+            # =================================================
+            # Table 3: Credits and Debits tabs
             # =================================================
             debits_df = df_last12[df_last12["Amount"] < 0]
             credits_df = df_last12[df_last12["Amount"] >= 0]
