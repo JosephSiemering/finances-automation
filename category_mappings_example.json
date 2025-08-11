@@ -1,0 +1,41 @@
+{
+    "Uncategorized": [],
+    "Gas": [
+        "Shell Oil",
+        "Gulf Oil"
+    ],
+    "Dining": [
+        "ChICK-FIL-A",
+        "Chipotle",
+        "Dunkin",
+        "Waffle house",
+        "Dairy Queen",
+        "Raising Canes"
+    ],
+    "Parking/Transportation": [
+        "PARKMOBILE",
+        "SPOTHERO",
+        "UBER"
+    ],
+    "Groceries/Snacks": [
+        "7-eleven",
+        "Publix"
+    ],
+    "Subscriptions": [
+        "Amazon Prime",
+        "Spotify"
+    ],
+    "Household": [
+        "Target",
+        "Walgreens",
+        "STAPLES",
+        "CVS"
+    ],
+    "Clothes": [
+        "Nike",
+        "Under Armour",
+    ],
+    "Salary": [
+        "Company Salary"
+    ]
+}

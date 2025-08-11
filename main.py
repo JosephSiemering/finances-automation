@@ -10,7 +10,7 @@ import datetime  # for working with dates
 st.set_page_config(page_title="My Finances", page_icon="💰", layout="wide")
 
 # Where categories and mappings are stored
-category_file = "category_mappings.json"
+category_file = "category_mappings_example.json"
 
 
 # Function to assign categories to each transaction
@@ -221,11 +221,15 @@ def main():
             debits_df = df_last12[df_last12["Amount"] < 0]
             credits_df = df_last12[df_last12["Amount"] >= 0]
 
+            st.subheader("All Transactions")
+
             tab1, tab2 = st.tabs(["Credits", "Debits"])
             with tab1:
-                st.write(credits_df)
+                st.write(credits_df.style
+                         .format("{:.2f}", subset=["Amount"]))
             with tab2:
-                st.write(debits_df)
+                st.write(debits_df.style
+                         .format("{:.2f}", subset=["Amount"]))
 
 
 main()
